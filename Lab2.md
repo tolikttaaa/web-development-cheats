@@ -2,6 +2,109 @@
 
 ### 1. Java-сервлеты. Особенности реализации, ключевые методы, преимущества и недостатки относительно CGI и FastCGI.
 
+|Связанные вопросы|
+| --- |
+|[CGI](https://github.com/AppLoidx/web-development-cheats-1/blob/master/Lab1.md#12-%D1%81%D0%B5%D1%80%D0%B2%D0%B5%D1%80%D0%BD%D1%8B%D0%B5-%D1%81%D1%86%D0%B5%D0%BD%D0%B0%D1%80%D0%B8%D0%B8-cgi---%D0%BE%D0%BF%D1%80%D0%B5%D0%B4%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5-%D0%BD%D0%B0%D0%B7%D0%BD%D0%B0%D1%87%D0%B5%D0%BD%D0%B8%D0%B5-%D0%BA%D0%BB%D1%8E%D1%87%D0%B5%D0%B2%D1%8B%D0%B5-%D0%BE%D1%81%D0%BE%D0%B1%D0%B5%D0%BD%D0%BD%D0%BE%D1%81%D1%82%D0%B8)|
+|[CGI & FastCGI](https://github.com/AppLoidx/web-development-cheats-1/blob/master/Lab1.md#13-fastcgi-%D0%B8-cgi)|
+
+<br>
+
+#### Ключевые отличия
+
+Заранее определимся, что CGI (и FastCGI) и Java Servlet - это спецификации:
+* [CGI 1.1 RFC3875](https://web.archive.org/web/20090529081353/http://www.ietf.org/rfc/rfc3875.txt)
+* [Java Servlet 4.0 FINAL](https://javaee.github.io/servlet-spec/downloads/servlet-4.0/servlet-4_0_FINAL.pdf)
+
+Проще говоря, это свод некоторых правил, чтобы разные разработчики могли придумывать свои программы.
+Согласитесь, если бы не было каких либо правил и все писали бы "по-своему", то разработка приложений
+была бы усложнена.
+
+Сервлеты и CGI имеют различая как в своих подоходах в спецификациях, так из-за того где и как запускаются.
+
+Из курса программирования мы знаем, что програмам написанная на языке Java компилируется в байт-код, которая
+потом исполняется на JVM. А CGI - это программа написанная на нативном языке, например, С, C++, Perl и тд., которые
+могут быть платформозависимыми, в отличие от Java
+
+Далее, важным отличием является то, что в CGI при каждом запросе клиента создается отдельный процесс, когда в сервлете
+запрос клиента может обрабатываться в JVM Thread
+
+<h3 align=center>CGI<br><img src="https://i.imgur.com/lereWPS.png" /></h3>
+<h3 align=center>Java Servlet<br><img src="https://i.imgur.com/YHs5ABH.png" /></h3>
+
+Создание процессов негативно сказывается на CPU, так как их создание может нагрузить CPU. Разумеется, то же самое можно
+сказать и про JVM Thread, но вторые более легковесны, чем отдельные процессы.
+
+Помимо нагрузки на CPU мы может получить некоторые преимущества. Например, исключение конфликтов при параллельной 
+обработке нескольких запросов или изолированность CGI-сценариев (падение CGI-сценария не приводит к падению всего сервера)
+
+Как говорилось ранее, запросы в сервлетах обрабатываются в отдельных потоках, а не процессах, что уменьшает нагрузку на CPU
+
+Собирая все выше сказанное, также можно утверждать что в среднем сценарии написанные на Java сервлтах исполняются быстрее,
+по нескольким причинам:
+1. В абсолютном большинстве случаев создание нового процесса дороже, чем создание нового потока
+2. Потоки можно хранить в пуле потоков и использовать старые, а не создавать новые. Поэтому даже в том
+случае, если создание процесса будет дешевым, то потоки можно оптимизровать и переиспользовать
+3. Когда CGI-программа завершается, также теряются все состояния и при новом запросе его нужно будет восстановить
+для нового процесса (в том числе конфигурация). А сервлеты могут сохранять важные состояния в памяти, которые повторно используются в запросах.
+
+#### Java Servlet
+Как ранее говорилось, Java Servlet - это спецификация. То есть некоторые инструкции и правила, которых должны придерживаться
+разработчики скриптов и программ, их запускающих.
+
+Можно отчетливо видеть влияние CGI на технологию сервлетов. Здесь также исполняются отдельные программы, которые принимают запросы
+и выдают ответ
+
+```java
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+public class ExampleServlet extends HttpServlet {
+   
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        
+        String parameter = request.getParameter("parameter");
+
+        HttpSession session = request.getSession(true);
+        session.setAttribute("parameter", parameter);
+
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+        try {
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Заголовок</title>");
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>se.ifmo/" + parameter + "</h1>");
+            out.println("</body>");
+            out.println("</html>");
+        } finally {
+            out.close();
+        }
+    } 
+
+    @Override
+    public String getServletInfo() {
+        return "Пример сервлета)";
+    }
+
+}
+```
+
+
+
+
+<br><br><br>
+<hr/>
+
+**TODO LINE**
+
 ### 2. Контейнеры сервлетов. Жизненный цикл сервлета.
 
 ### 3. Диспетчеризация запросов в сервлетах. Фильтры сервлетов.
