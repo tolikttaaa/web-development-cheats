@@ -96,6 +96,13 @@ public class ExampleServlet extends HttpServlet {
 }
 ```
 
+Для соблюдения спецификации используются интерфейсы из пакета `javax.servlet`. Мы можем писать реализации
+методов интерфейса соблюдая правила. В таком случае, мы можем быть уверены, что программа работающая с нашими сервлетами
+запустит и будет использовать их правильно.
+
+В зависимости от нужд мы можем реализовать методы:<br> `doGet`, `doPost`, `doPut`, `doDelete`, `getServletInfo`, `init` и `destroy` из [*HttpServlet*](https://docs.oracle.com/javaee/7/api/javax/servlet/http/HttpServlet.html)
+
+
 
 
 
