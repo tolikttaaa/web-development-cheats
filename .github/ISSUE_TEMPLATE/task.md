@@ -1,6 +1,6 @@
 ---
 name: Task
-about: 'Лаба №## Вопрос ##'
+about: 'Очередной вопрос'
 title: "[TASK]"
 labels: need to do
 assignees: ''
