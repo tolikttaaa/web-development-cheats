@@ -136,6 +136,83 @@ javax.faces.component.UIComponent
 <p align="center">Жизненный цикл JSF<br><img src="docs/img/JSF_Runtime.png" /></p>
 
 ## 4. Конвертеры и валидаторы данных
+### Конверторы
+JSF имеет встроенные конверторы и позволяет создавать специализированные.
+
+#### Стандартные конвертеры JSF
+- `javax.faces.BigDecimal`
+- `javax.faces.BigInteger`
+- `javax.faces.Boolean`
+- `javax.faces.Byte`
+- `javax.faces.Character`
+- `javax.faces.DateTime`
+- `javax.faces.Double`
+- `javax.faces.Float`
+
+#### Пример использования
+```html
+<h:outputLabel value="Age" for="age" accesskey="age" />
+<h:inputText id="age" size="3" value="#{contactController.contact.age}" />
+<h:outputLabel value="Birth Date" for="birthDate" accesskey="b" />
+
+<h:inputText id="birthDate" value="#{contactController.contact.birthDate}">
+    <f:convertDateTime pattern="MM/yyyy" />
+</h:inputText>
+```
+
+#### Специализированные конвертеры
+1. Создать класс, реализующий интерфейс `Converter`
+2. Реализовать метод `getAsObject()`, для преобразования строкового значения поля в объект
+3. Реализовать метод `getAsString()`
+4. Зарегистрировать конвертер в `FacesContext` в файле `faces-config.xml`, используя элемент `<converter>`
+
+#### Файл `faces-config.xml`
+```xml
+<converter>
+    <converter-for-class>
+        com.arcmind.contact.model.Group
+    </converter-for-class>
+    <converter-class>
+        com.arcmind.contact.converter.GroupConverter
+    </converter-class>
+</converter>
+```
+
+### Валидаторы
+Существует 4 типа валидаторов
+
+#### 1. С помощью встроенных компонентов
+- DoubleRangeValidator
+- LongRangeValidator
+- LengthValidator
+
+**Пример**
+```html
+<%-- возраст (age) --%>
+<h:outputLabel value="Age" for="age" accesskey="age" />
+<h:inputText id="age" size="3" value="#{contactController.contact.age}">
+    <f:validateLongRange minimum="0" maximum="150"/>
+</h:inputText>
+<h:message for="age" errorClass="errorClass" />
+```
+
+#### 2. На уровне приложения
+Это непосредственно бизнес-логика. Заключается в добавлении в методы управляемых bean-объектов кода, который использует модель приложения для проверки уже помещенных в нее данных.
+
+#### 3. С помощью проверочных методов серверных объектов
+Для типов данных, не поддерживаемых стандартными валидаторами, например, адресов электронной почты, можно создавать собственные валидирующие компоненты
+
+#### 4. С помощью специализированных компонентов, реализующих интерфейс *Validator*
+JSF позволяет создавать подключаемые валидирующие компоненты, которые можно использовать в различных Web-приложениях.
+Это должен быть класс, реализующий интерфейс *Validator*, в котором реализован метод `validate()`. Необходимо зарегистрировать валидатор в файле `faces-config.xml`. После этого можно использовать тег `<f:validator/>` на страницах JSP.
+
+##### Файл `faces-config.xml`
+```xml
+<validator>
+    <validator-id>arcmind.zipCode</validator-id>
+    <validator-class>com.arcmind.validators.ZipCodeValidator</validator-class>
+</validator>
+```
 
 ## 5. Представление страницы JSF на стороне сервера. Класс *UIViewRoot*
 
