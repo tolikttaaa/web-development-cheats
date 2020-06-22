@@ -28,8 +28,8 @@
 Далее, важным отличием является то, что в CGI при каждом запросе клиента создается отдельный процесс, когда в сервлете
 запрос клиента может обрабатываться в JVM Thread
 
-<p align="center">CGI<br><img src="https://i.imgur.com/lereWPS.png" /></p>
-<p align="center">Java Servlet<br><img src="https://i.imgur.com/YHs5ABH.png" /></p>
+<p align="center">CGI<br><img src="docs/img/Lab2_CGI_Schema.png" /></p>
+<p align="center">Java Servlet<br><img src="docs/img/Lab2_Servlet_Schema.png" /></p>
 
 Создание процессов негативно сказывается на CPU, так как их создание может нагрузить CPU. Разумеется, то же самое можно
 сказать и про JVM Thread, но вторые более легковесны, чем отдельные процессы.
